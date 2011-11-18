@@ -6,7 +6,7 @@ dataset = datasets.PairsDataset([lfwPath, '/', variant], featFun, 'jpg');
 [posPairs, negPairs] = getPairsFromFile(lfwPath, 'pairsDevTest.txt');
 dataset.loadPairs(posPairs, negPairs);
 
-[posPairs, negPairs] = getPairsFromFile(lfwPath, 'pairsDevTest.txt');
+[posPairs, negPairs] = getPairsFromFile(lfwPath, 'pairsDevTrain.txt');
 dataset.loadPairs(posPairs, negPairs);
 
 function [posPairs, negPairs] = getPairsFromFile(lfwPath, pairsFilename)
