@@ -77,7 +77,7 @@ classdef Stats
                 plot(fpr, tpr, refPointsPlotOpts{:}, 'MarkerFaceColor', 'g');
                 hr = obj.getEqualErrorHR;
                 plot(1 - hr, hr, refPointsPlotOpts{:}, 'MarkerFaceColor', 'b');
-                legend('ROC', 'Biggest HR Point', 'Equal Error Point', ...
+                legend('ROC', 'Best HR Point', 'Equal Error Point', ...
                     'Location', 'SouthEast');
                 hold off;
             end
@@ -139,7 +139,7 @@ classdef Stats
             fprintf('Stats summary:\n');
             fprintf('\tIs from multiple folds? %d\n', obj.IsFromMultipleFolds);
             [hr, fpr, tpr, thresh] = obj.getBestHR;
-            fprintf(['\tBiggest HR Point: hr=%.6f, fpr=%.6f, tpr=%.6f, ', ...
+            fprintf(['\tBest HR Point: hr=%.6f, fpr=%.6f, tpr=%.6f, ', ...
                 'thresh=%.6f\n'], hr, fpr, tpr, thresh);
             [hr, thresh] = obj.getEqualErrorHR;
             fprintf(['\tEqual Error Point: tpr=%.6f, eer=%.6f, ', ...
