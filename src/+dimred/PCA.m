@@ -24,11 +24,11 @@ classdef PCA < handle
         end
 
         function out = get.NumberOfPCs(obj)
-            out = size(obj.PCs, 2);
+            out = length(obj.Variances);
         end
 
         function out = get.WhitenedPCs(obj)
-            out = obj.PCs * diag(obj.Variances .^ -0.5);
+            out = bsxfun(@times, obj.PCs, (obj.Variances .^ -0.5)');
         end
 
         function out = getSufficientNPCs(obj, e)
