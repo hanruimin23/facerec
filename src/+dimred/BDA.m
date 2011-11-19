@@ -10,11 +10,10 @@ classdef BDA < handle
 
     methods
 
-        function obj = BDA(X, Y, l)
-            D = X - Y;
-            D = bsxfun(@minus, D, mean(D(l, :)));
-            Sp = D(l, :)' * D(l, :);
-            Sn = D(~l, :)' * D(~l, :);
+        function obj = BDA(data, labels)
+            data = bsxfun(@minus, data, mean(data(labels, :)));
+            Sp = data(labels, :)' * data(labels, :);
+            Sn = data(~labels, :)' * data(~labels, :);
 
             [eigvecs, eigvals] = eig(pinv(Sp) * Sn);
             [eigvals, eigvalsIdx] = sort(diag(eigvals), 'descend');
