@@ -52,7 +52,7 @@ classdef PCA < handle
                 T = obj.WhitenedPCs(:, 1:nPCs);
             end
 
-            fun = @(u) u * T;
+            fun = @(u) bsxfun(@minus, u, obj.DataMu) * T;
         end
 
     end
