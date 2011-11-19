@@ -16,9 +16,7 @@ classdef Stats
     methods
 
         function obj = Stats(scores, labels)
-            if isempty(scores)
-                error('Can''t compute stats without scores.');
-            end
+            assert(~isempty(scores), 'Can''t compute stats without scores.');
 
             [nSamples, nFolds] = size(scores);
 
@@ -57,7 +55,7 @@ classdef Stats
             if nargin < 3 || isempty(plotTitle)
                 plotTitle = 'Receiver-Operating Curve';
                 if obj.IsFromMultipleFolds
-                    plotTitle = ['Mean ' plotTitle];
+                    plotTitle = ['Mean ', plotTitle];
                 end
             end
             if isempty(varargin)
@@ -108,11 +106,9 @@ classdef Stats
         end
 
         function [hr, fpr, tpr] = getRatesAtThresh(obj, thresh)
-            if obj.IsFromMultipleFolds
-                error(['This is an averaged version of various folds stats ' ...
-                    'so that there''s no mapping between thresholds and ' ...
-                    'rates.']);
-            end
+            assert(~obj.IsFromMultipleFolds, ['This is an averaged ', ...
+                'version of various folds stats so that there''s no ', ...
+                'mapping between thresholds and rates.']);
 
             [~, idx] = min(abs(thresh - obj.Thresholds));
             hr = obj.HitRates(idx);
@@ -143,10 +139,10 @@ classdef Stats
             fprintf('Stats summary:\n');
             fprintf('\tIs from multiple folds? %d\n', obj.IsFromMultipleFolds);
             [hr, fpr, tpr, thresh] = obj.getBestHR;
-            fprintf(['\tBiggest HR Point: hr=%.6f, fpr=%.6f, tpr=%.6f, ' ...
+            fprintf(['\tBiggest HR Point: hr=%.6f, fpr=%.6f, tpr=%.6f, ', ...
                 'thresh=%.6f\n'], hr, fpr, tpr, thresh);
             [hr, thresh] = obj.getEqualErrorHR;
-            fprintf(['\tEqual Error Point: tpr=%.6f, eer=%.6f, ' ...
+            fprintf(['\tEqual Error Point: tpr=%.6f, eer=%.6f, ', ...
                 'thresh=%.6f\n'], hr, 1 - hr, thresh);
             [hr, tpr, thresh] = obj.getRatesAtFPR(0.05);
             fprintf('\tRates at fpr=5%%: hr=%.6f, tpr=%.6f, thresh=%.6f\n', ...

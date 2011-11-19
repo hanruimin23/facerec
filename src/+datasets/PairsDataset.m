@@ -75,9 +75,8 @@ classdef PairsDataset < matlab.mixin.Copyable
         end
 
         function [training, test] = getFold(obj, fold)
-            if fold < 1 || fold > obj.NumberOfFolds
-                error('There''s no fold ''%d''.', fold);
-            end
+            assert(fold >= 1 && fold <= obj.NumberOfFolds, sprintf( ...
+                'There''s no fold ''%d''.', fold));
 
             mask = cell2mat(obj.pairs(:, end)) == fold;
 
