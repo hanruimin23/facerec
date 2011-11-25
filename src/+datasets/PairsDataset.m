@@ -43,7 +43,11 @@ classdef PairsDataset < matlab.mixin.Copyable
             end
         end
 
-        function loadPairs(obj, posPairs, negPairs, shuffle)
+        function loadPairs(obj, posPairs, negPairs, shuffle, hProgressBar)
+            if nargin < 5
+                hProgressBar = [];
+            end
+
             nPosPairs = size(posPairs{1}, 1);
             nNegPairs = size(negPairs{1}, 1);
             nPairs = nPosPairs + nNegPairs;
@@ -54,6 +58,11 @@ classdef PairsDataset < matlab.mixin.Copyable
             for idx = 1:nPosPairs
                 X{idx} = obj.loadSample(posPairs{1}{idx}, posPairs{2}(idx));
                 Y{idx} = obj.loadSample(posPairs{1}{idx}, posPairs{3}(idx));
+                if ~isempty(hProgressBar);
+                    progress = idx / nPairs;
+                    waitbar(progress, hProgressBar, sprintf('%.2f%%', ...
+                        progress * 100));
+                end
             end
 
             for idx = 1:nNegPairs
@@ -61,6 +70,11 @@ classdef PairsDataset < matlab.mixin.Copyable
                     negPairs{2}(idx));
                 Y{nPosPairs + idx} = obj.loadSample(negPairs{3}{idx}, ...
                     negPairs{4}(idx));
+                if ~isempty(hProgressBar)
+                    progress = (nPosPairs + idx) / nPairs;
+                    waitbar(progress, hProgressBar, sprintf('%.2f%%', ...
+                        progress * 100));
+                end
             end
 
             labels = num2cell([true(nPosPairs, 1); false(nNegPairs, 1)]);
@@ -106,6 +120,7 @@ classdef PairsDataset < matlab.mixin.Copyable
             [training, val, test] = obj.getFold(fold, trainToValRatio);
             scores = utils.computeScores(test(:, 1), test(:, 2), scoreFun);
             testStats = utils.Stats(scores, cell2mat(test(:, 3)));
+
             if nargout >= 2
                 valStats = [];
                 if ~isempty(val)
@@ -114,6 +129,7 @@ classdef PairsDataset < matlab.mixin.Copyable
                     valStats = utils.Stats(scores, cell2mat(val(:, 3)));
                 end
             end
+
             if nargout == 3
                 scores = utils.computeScores(training(:, 1), training(:, 2), ...
                     scoreFun);
