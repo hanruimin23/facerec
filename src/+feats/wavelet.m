@@ -1,6 +1,6 @@
 function out = wavelet(I, wname, level)
 if nargin < 3
-    level = 3;
+    level = 2;
 end
 
 [C, S] = wavedec2(I, level, wname);
