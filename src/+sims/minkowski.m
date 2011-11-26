@@ -1,2 +1,2 @@
 function out = minkowski(p)
-out = @(u, v) -(sum(abs(u - v) .^ p) .^ (1 / p));
+out = @(u, v) -norm(u - v, p);
