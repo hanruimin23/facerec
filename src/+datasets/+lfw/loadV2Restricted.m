@@ -17,7 +17,7 @@ for idx = 1:nFolds
     % nPosPairsByFold == nNegPairsByFold for lfw
     negPairs = textscan(pairsFid, '%s %d %s %d', nPosPairsByFold);
 
-    dataset.loadPairs(posPairs, negPairs, true, hFoldProgressBar);
+    dataset.loadPairs(posPairs, negPairs, false, hFoldProgressBar);
 
     waitbar(idx / nFolds, hTotalProgressBar, sprintf(totalProgressBarMsg, ...
         min(idx + 1, nFolds), nFolds));
