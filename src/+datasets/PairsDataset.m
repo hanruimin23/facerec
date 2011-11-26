@@ -58,7 +58,7 @@ classdef PairsDataset < matlab.mixin.Copyable
             for idx = 1:nPosPairs
                 X{idx} = obj.loadSample(posPairs{1}{idx}, posPairs{2}(idx));
                 Y{idx} = obj.loadSample(posPairs{1}{idx}, posPairs{3}(idx));
-                if ~isempty(hProgressBar);
+                if ~isempty(hProgressBar)
                     progress = idx / nPairs;
                     waitbar(progress, hProgressBar, sprintf('%.2f%%', ...
                         progress * 100));
@@ -88,53 +88,46 @@ classdef PairsDataset < matlab.mixin.Copyable
             obj.pairs = [obj.pairs; pairs];
         end
 
-        function [training, val, test] = getFold(obj, fold, trainToValRatio)
-            assert(fold >= 1 && fold <= obj.NumberOfFolds, sprintf( ...
-                'There''s no fold ''%d''.', fold));
+        function valFolds = chooseValFolds(obj, testFold, nValFolds)
+            assert(testFold >= 1 && testFold <= obj.NumberOfFolds, sprintf( ...
+                'There''s no fold ''%d''.', testFold));
+            assert(nValFolds >= 0 && nValFolds < obj.NumberOfFolds - 1, ...
+                sprintf('''nValFolds'' must be in [0, %d) interval.', ...
+                obj.NumberOfFolds - 1));
 
-            if nargin < 3
-                trainToValRatio = 1;
-            end
-
-            assert(trainToValRatio > 0 && trainToValRatio <= 1, ...
-                '''trainToValRatio'' must be in (0, 1] interval.');
-
-            mask = cell2mat(obj.pairs(:, end)) == fold;
-
-            training = obj.samplesData.values(obj.pairs(~mask, 1:2));
-            training = [training, obj.pairs(~mask, 3)];
-            nTraining = ceil(trainToValRatio * size(training, 1));
-            val = training(nTraining + 1:end, :);
-            training = training(1:nTraining, :);
-
-            test = obj.samplesData.values(obj.pairs(mask, 1:2));
-            test = [test, obj.pairs(mask, 3)];
+            valFolds = datasample(setdiff(1:obj.NumberOfFolds, testFold), ...
+                nValFolds, 'Replace', false);
         end
 
-        function [testStats, valStats, trainingStats] = evalMatcher(obj, ...
-                fold, scoreFun, trainToValRatio)
-            if nargin < 4
-                trainToValRatio = 1;
+        function [training, val, test] = getFold(obj, testFold, valFolds)
+            assert(testFold >= 1 && testFold <= obj.NumberOfFolds, sprintf( ...
+                'There''s no fold ''%d''.', testFold));
+
+            if nargin < 3
+                valFolds = [];
             end
 
-            [training, val, test] = obj.getFold(fold, trainToValRatio);
-            scores = utils.computeScores(test(:, 1), test(:, 2), scoreFun);
-            testStats = utils.Stats(scores, cell2mat(test(:, 3)));
+            assert(~ismember(testFold, valFolds), ['The test fold can''t ', ...
+                'be used for validation.']);
 
-            if nargout >= 2
-                valStats = [];
-                if ~isempty(val)
-                    scores = utils.computeScores(val(:, 1), val(:, 2), ...
-                        scoreFun);
-                    valStats = utils.Stats(scores, cell2mat(val(:, 3)));
-                end
+            folds = cell2mat(obj.pairs(:, end));
+            valMask = any(cell2mat(arrayfun(@(f) folds == f, valFolds, ...
+                'UniformOutput', false)), 2);
+            testMask = folds == testFold;
+            if isempty(valMask)
+                trainingMask = ~testMask;
+            else
+                trainingMask = ~(valMask | testMask);
             end
 
-            if nargout == 3
-                scores = utils.computeScores(training(:, 1), training(:, 2), ...
-                    scoreFun);
-                trainingStats = utils.Stats(scores, cell2mat(training(:, 3)));
-            end
+            training = obj.samplesData.values(obj.pairs(trainingMask, 1:2));
+            training = [training, obj.pairs(trainingMask, 3)];
+
+            val = obj.samplesData.values(obj.pairs(valMask, 1:2));
+            val = [val, obj.pairs(valMask, 3)];
+
+            test = obj.samplesData.values(obj.pairs(testMask, 1:2));
+            test = [test, obj.pairs(testMask, 3)];
         end
 
         function newObj = apply(obj, fun, newCopy)
